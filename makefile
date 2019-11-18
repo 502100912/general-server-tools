@@ -1,21 +1,42 @@
-all : output_dir \
-    test_ut_framework \
-    clean
-.PHONY : all
+CXX = g++
+CXXFLAGS = -g -O2 -std=c++0x -Wno-deprecated
 
-#for unittest
-output_dir: 
+#global include path
+INCLUDE = -I./src -I./ut_framework
+
+#for gserver source code
+DIRS := ./src ./ut_framework
+SOURCES := $(foreach d,$(DIRS),$(wildcard $(addprefix $(d)/*,cpp)))
+OBJS := $(addsuffix .o, $(basename $(SOURCES))) 
+LIB :=gserverlib
+LD := -L. -l$(LIB)
+
+#for uinttest
+TEST_DIRS := ./unittest
+TEST_SOURCES := $(foreach d,$(TEST_DIRS),$(wildcard $(addprefix $(d)/*,cpp)))
+TEST_OBJS := $(addsuffix .o, $(basename $(TEST_SOURCES))) 
+TESTS_EXE := $(basename $(TEST_SOURCES))
+
+.PHONY:all clean
+
+all:$(LIB) $(TESTS_EXE) 
+
+#compile gserver source code to static lib
+$(LIB):$(OBJS)
+	ar crs lib$@.a $(OBJS)
+
+#compile all cpp to .o
+%.o:%.cpp
+	$(CXX) -c $(INCLUDE) $(CXXFLAGS) $< -o $@
+
+#comile all unittest and link lib,output executables
+$(TESTS_EXE):$(TEST_OBJS)
+	$(CXX) $(CXXFLAG) $@.o -o ./output/test/$(notdir $@) $(LD)
+
+
+#clean middle files
+clean: 
 	rm -rf ./output
-	mkdir -p ./output/test
-
-test_ut_framework :  test_ut_framework.o ut_framework.o output_dir
-	g++ ut_framework.o test_ut_framework.o -o ./output/test/test_ut_framework -std=c++11
-
-test_ut_framework.o : unittest/test_ut_framework.cpp ut_framework/ut_framework.h ut_framework/ut_framework.cpp 
-	g++ -c unittest/test_ut_framework.cpp -I. -I./ut_framework  -o test_ut_framework.o -std=c++11
-
-ut_framework.o : ut_framework/ut_framework.h ut_framework/ut_framework.cpp
-	g++ -c ut_framework/ut_framework.cpp -o ut_framework.o -std=c++11
-
-clean : 
-	rm -rf *o
+	rm -rf ./src/*.o ./unittest/*.o ./ut_framework/*.o
+	rm -rf ./lib*a
+	mkdir -p ./output/test 

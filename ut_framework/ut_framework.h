@@ -24,9 +24,8 @@ private:
 };
 
 
-//we cant do this in this scope!
-//UnitTest::instance()->add(test);                  
-
+//##:token concatenation. concatenate two tokens
+//#:stringification, x=123,#x->"123"
 #define G_TEST(test_name)                           \ 
 class test_name : public TestBase{                  \
 public:                                             \
@@ -36,7 +35,7 @@ public:                                             \
     void test_body();                               \
     const char* name() {return #test_name;}         \
 };                                                  \
-test_name test_name;                                \ 
+static test_name test_name;                                \ 
 void test_name::test_body()
 
 
