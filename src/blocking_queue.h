@@ -8,7 +8,8 @@
 #include <condition_variable>
 namespace gserver {
 
-//thred-safe blocking queue, support fixed capacity
+//thred-safe blocking queue
+//support limited capacity and default to be unlimited
 template <typename T, int MAXSIZE = 0>
 class BlockingQueue {
 public:
@@ -18,7 +19,9 @@ public:
         }
     }
 
-    void put(const T& t) {
+    //Produce an resource, random notify a thread which waiting on resource
+    //Will block at wait free_slot if queue is limited
+    const T& put(const T& t) {
         std::unique_lock<std::mutex> lock(_mutex);
 
         if (_is_fixed_size) {
@@ -27,8 +30,11 @@ public:
         }
         _queue.push(t);
         _resource.notify_one();
+        return t;
     }
 
+    //Consume an object, random notify a thread which waiting on free_slot if queue is limited
+    //Will block if the queue is empty
     T& wait_and_pop() {
         std::unique_lock<std::mutex> lock(_mutex);
         //1.call with lock locked
@@ -50,6 +56,8 @@ public:
         return t;
     }
 
+    //Try consume an object, check the queue empty first
+    //Return true if pop successfully
     bool try_pop(T& value) {
         std::unique_lock<std::mutex> lock(_mutex);
         if (_queue.empty()) {
@@ -57,6 +65,9 @@ public:
         }
         value = _queue.front();
         _queue.pop();
+        if (_is_fixed_size) {
+            _free_slot.notify_one();
+        }
         return true;
     }
 
