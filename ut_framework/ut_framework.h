@@ -1,11 +1,13 @@
 #ifndef UNITTEST_FRAMEWORK_H
 #define UNITTEST_FRAMEWORK_H
 #include <vector>
+#include "ut_except_impl.h"
 
 //Parent class of a test case
 class TestBase {
 public:
     virtual void test_body() = 0;
+    virtual ~TestBase(){};
     virtual const char* name() {return "undefiend";}
 };
 

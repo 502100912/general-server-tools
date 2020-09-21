@@ -1,5 +1,9 @@
+#资料
+#https://cloud.tencent.com/developer/article/1065286
+
 CXX = g++
 CXXFLAGS = -g -O2 -std=c++0x -Wno-deprecated
+##CXXFLAGS = -g -O2 -Wc++17-extensions -Wno-deprecated
 
 #global include path
 INCLUDE = -I./src -I./ut_framework
